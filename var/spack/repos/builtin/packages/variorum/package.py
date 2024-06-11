@@ -39,6 +39,7 @@ class Variorum(CMakePackage):
         description="CMake build type",
         values=("Debug", "Release"),
     )
+    variant("pls", default=False, description="Testing variant feature")
 
     ########################
     # Package dependencies #
@@ -57,14 +58,14 @@ class Variorum(CMakePackage):
     def cmake_args(self):
         spec = self.spec
         cmake_args = []
-
+        #adds location of jansson directory
         cmake_args.append("-DJANSSON_DIR={0}".format(spec["jansson"].prefix))
-
+        #checks if compiler is cce?
         if spec.satisfies("%cce"):
             cmake_args.append("-DCMAKE_C_FLAGS=-fcommon")
             cmake_args.append("-DCMAKE_CCC_FLAGS=-fcommon")
             cmake_args.append("-DCMAKE_Fortran_FLAGS=-ef")
-
+        #checking spack flags, and adding coresponding flags to the cmake. 
         if "+shared" in spec:
             cmake_args.append("-DBUILD_SHARED_LIBS=ON")
         else:
@@ -76,15 +77,17 @@ class Variorum(CMakePackage):
             cmake_args.append("-DSPHINX_EXECUTABLE=" + sphinx_build_exe)
         else:
             cmake_args.append("-DBUILD_DOCS=OFF")
+        if "+pls" in spec: 
+            print("flag working")
 
         if "build_type=Debug" in spec:
             cmake_args.append("-DVARIORUM_DEBUG=ON")
         else:
             cmake_args.append("-DVARIORUM_DEBUG=OFF")
-
+        #spack installer or packageBase method, returns true if indicated
         if self.run_tests:
             cmake_args.append("-DBUILD_TESTS=ON")
         else:
             cmake_args.append("-DBUILD_TESTS=OFF")
-
+        #returns list of args to be passed into cmake
         return cmake_args
